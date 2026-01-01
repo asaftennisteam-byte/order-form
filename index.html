@@ -2,461 +2,465 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>הזמנת מנות - איסורד</title>
+    <title>מערכת הזמנת מנות - בית מרקחת גרעיני איסורד</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: #f0f4f8; padding: 15px; margin: 0; }
-        
-        .logo { background: #1F4E79; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 15px; }
-        .logo-main { font-size: 42px; font-weight: bold; color: white; letter-spacing: 5px; }
-        .logo-sub { font-size: 14px; color: #8BC34A; margin-top: 5px; }
-        
-        .contact { background: #2E75B6; color: white; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
-        .contact a { color: white; }
-        
-        .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .card-title { color: #1F4E79; font-weight: bold; font-size: 16px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #1F4E79; }
-        
-        .field { margin-bottom: 15px; }
-        .field label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; }
-        .field input, .field select, .field textarea {
-            width: 100%; padding: 12px; font-size: 16px;
-            border: 2px solid #ddd; border-radius: 6px; background: #FFFFD0;
+        body { background-color: #f0f4f8; padding: 20px; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .logo-banner { background-color: #1F4E79; padding: 25px; margin: 0 0 20px 0; border-radius: 8px; text-align: center; }
+        .logo-main { font-size: 52px; font-weight: bold; color: white; letter-spacing: 8px; margin: 0; }
+        .logo-sub { font-size: 18px; color: #8BC34A; letter-spacing: 4px; margin-top: 5px; }
+        .header { background-color: #2E75B6; color: white; padding: 15px 25px; margin: 0 0 20px 0; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+        .header h1 { margin: 0; font-size: 22px; line-height: 1.4; }
+        .header-left { text-align: left; font-size: 13px; line-height: 1.8; }
+        .header-left a { color: white; text-decoration: none; }
+        .dashboard { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-section { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .section-title { font-weight: bold; color: #1F4E79; margin-bottom: 15px; font-size: 16px; }
+        .form-row { display: flex; align-items: center; margin-bottom: 12px; gap: 15px; flex-wrap: wrap; }
+        .form-row label { font-weight: bold; min-width: 180px; }
+        .form-row input, .form-row select, .form-row textarea { padding: 10px; font-size: 16px; border: 2px solid #ddd; border-radius: 5px; background-color: #FFFFD0; width: 350px; }
+        .form-row select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: left 10px center; background-size: 16px; padding-left: 35px; }
+        .form-row textarea { width: 350px; height: 50px; resize: vertical; }
+        .form-row input[type="number"], .form-row input[type="time"] { width: 150px; }
+        .buttons { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        button { padding: 14px 30px; font-size: 16px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-add { background-color: #70AD47; color: white; }
+        .btn-clear { background-color: #C00000; color: white; }
+        .btn-print { background-color: #1F4E79; color: white; }
+        .btn-export { background-color: #217346; color: white; }
+        .btn-undo { background-color: #FF9800; color: white; }
+        .btn-email { background-color: #D44638; color: white; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; }
+        .modal-title { font-size: 20px; font-weight: bold; color: #1F4E79; margin-bottom: 20px; }
+        .modal-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .modal-btn { padding: 15px 20px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-gmail { background-color: #EA4335; color: white; }
+        .btn-outlook { background-color: #0078D4; color: white; }
+        .btn-cancel { background-color: #6c757d; color: white; margin-top: 10px; }
+        #orderContainer { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .order-logo-banner { background-color: #1F4E79; padding: 15px; border-radius: 8px 8px 0 0; text-align: center; }
+        .order-logo-main { font-size: 32px; font-weight: bold; color: white; letter-spacing: 5px; margin: 0; }
+        .order-logo-sub { font-size: 12px; color: #8BC34A; letter-spacing: 2px; margin-top: 3px; }
+        .order-header { background-color: #2E75B6; color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .order-header h2 { margin: 0; font-size: 18px; }
+        .order-header-left { font-size: 11px; text-align: left; line-height: 1.6; }
+        .order-info { background-color: #D9E2F3; padding: 15px; margin-bottom: 20px; border-radius: 0 0 8px 8px; display: flex; gap: 20px; font-weight: bold; flex-wrap: wrap; }
+        .product-section { margin-bottom: 25px; }
+        .product-header { background-color: #1F4E79; color: white; padding: 12px 15px; font-weight: bold; font-size: 18px; border-radius: 5px 5px 0 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #D9E2F3; padding: 10px; border: 1px solid #888; font-weight: bold; font-size: 14px; }
+        td { padding: 10px; border: 1px solid #888; text-align: center; font-size: 14px; }
+        td.notes-cell { text-align: right; font-size: 13px; }
+        tr:nth-child(even) { background-color: #f5f5f5; }
+        .total-row { background-color: #FFF3CD !important; font-weight: bold; }
+        .total-row td { border-top: 2px solid #1F4E79; }
+        .empty-message { text-align: center; color: #888; padding: 40px; font-size: 18px; }
+        @media (max-width: 600px) {
+            .logo-main { font-size: 36px; letter-spacing: 4px; }
+            .header { flex-direction: column; text-align: center; }
+            .form-row { flex-direction: column; align-items: flex-start; }
+            .form-row label { min-width: auto; }
+            .form-row input, .form-row select, .form-row textarea { width: 100%; }
+            .buttons { flex-direction: column; }
+            button { width: 100%; }
         }
-        .field textarea { height: 60px; resize: none; }
-        .field select { height: 48px; }
-        
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
-        .btn {
-            flex: 1; min-width: 120px; padding: 15px; font-size: 16px; font-weight: bold;
-            border: none; border-radius: 8px; color: white;
-        }
-        .btn-green { background: #70AD47; }
-        .btn-red { background: #C00000; }
-        .btn-blue { background: #1F4E79; }
-        .btn-dark-green { background: #217346; }
-        
-        .order-box { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .order-header { background: #1F4E79; color: white; padding: 15px; text-align: center; border-radius: 8px 8px 0 0; margin: -15px -15px 15px -15px; }
-        .order-header-title { font-size: 24px; font-weight: bold; letter-spacing: 3px; }
-        .order-header-sub { font-size: 11px; color: #8BC34A; }
-        
-        .order-info { background: #D9E2F3; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; line-height: 1.8; }
-        
-        .product-box { margin-bottom: 20px; }
-        .product-title { background: #1F4E79; color: white; padding: 10px; font-weight: bold; border-radius: 6px 6px 0 0; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #D9E2F3; padding: 8px 4px; border: 1px solid #999; font-size: 12px; }
-        td { padding: 8px 4px; border: 1px solid #999; text-align: center; }
-        .total-row { background: #FFF3CD; font-weight: bold; }
-        
-        .empty-msg { text-align: center; color: #888; padding: 30px; }
-        
         @media print {
-            .card, .contact { display: none; }
-            body { padding: 5px; }
+            .dashboard, .buttons, .logo-banner, .header, .modal-overlay { display: none !important; }
+            #orderContainer { box-shadow: none; padding: 0; }
         }
     </style>
 </head>
 <body>
-
-<div class="logo">
-    <div class="logo-main">ISORAD</div>
-    <div class="logo-sub">Radiopharmacy</div>
-</div>
-
-<div class="contact">
-    📞 <a href="tel:089434424">08-9434424</a> | ✉️ <a href="mailto:radiopharmacy@isorad.co.il">radiopharmacy@isorad.co.il</a>
-</div>
-
-<div class="card">
-    <div class="card-title">פרטי הזמנה</div>
-    
-    <div class="field">
-        <label>שם המוסד:</label>
-        <select id="sel_inst">
-            <option value="">-- בחר מוסד --</option>
-            <option>מרכז רפואי הדסה עין-כרם רפואה גרעינית</option>
-            <option>מ.א.ר ירושלים</option>
-            <option>מרכז רפואי שערי צדק</option>
-            <option>ספקטרום הדמיה</option>
-            <option>מרכז רפואי אסף הרופא</option>
-            <option>המרכז רפואי ע״ש חיים שיבא רפואה גרעינית</option>
-            <option>המרכז הרפואי ע״ש חיים שיבא קרן מחקרים</option>
-            <option>מרכז רפואי וולפסון</option>
-            <option>המרכז הרפואי ע״ש חיים שיבא מכון הלב</option>
-            <option>שרותי בריאות כללית מרכז שניידר לרפואת ילדים</option>
-            <option>שרותי בריאות כללית בי״ח בילינסון רפואה גרעינית</option>
-            <option>שרותי בריאות כללית בי״ח בילינסון קרדיולוגיה</option>
-            <option>שרותי בריאות כללית בית חולים השרון</option>
-            <option>מרכז רפואי ת״א ע״ש סורסקי איכילוב רפואה גרעינית</option>
-            <option>אסותא מרכזים רפואיים סניף ראשל״צ</option>
-            <option>אסותא מרכזים רפואיים סניף רמת החייל</option>
-            <option>אסותא מרכזים רפואיים סניף מכון הלב</option>
-            <option>נור מד</option>
-            <option>קר שרותי רפואה בע״מ סניף נתניה</option>
-            <option>אסותא מרכזים רפואיים סניף אשדוד</option>
-            <option>אסותא מרכזים רפואיים מכון PET</option>
-            <option>אסותא מרכזים רפואיים בית מרקחת</option>
-            <option>אסותא מרכזים רפואיים סניף חיפה</option>
-            <option>עמותת בית חולים הציבורי אסותא אשדוד</option>
-            <option>אסותא מרכזים רפואיים סניף באר שבע</option>
-            <option>מרכז רפואי רמב״ם</option>
-            <option>תאגיד הבריאות רמב״ם</option>
-            <option>המרכז למחקר גרעיני</option>
-            <option>המרכז הרפואי זיו</option>
-            <option>המרכז הרפואי הלל יפה</option>
-            <option>בית חולים נהריה</option>
-            <option>שרותי בריאות כללית מרכז רפואי כרמל</option>
-            <option>שרותי בריאות כללית מרכז רפואי מאיר</option>
-            <option>שרותי בריאות כללית מרכז רפואי העמק</option>
-            <option>מרכז רפואי בני ציון קרן מחקרים</option>
-            <option>GE MEDICAL SYSTEM ISRAEL LTD</option>
-            <option>מ.א.ר נצרת</option>
-            <option>בית חולים ברזילי קרן מחקרים</option>
-            <option>בית חולים ברזילי</option>
-            <option>שרותי בריאות כללית מרכז רפואי קפלן איזוטופים</option>
-            <option>שרותי בריאות כללית מרכז רפואי קפלן קרדיולוגיה</option>
-            <option>שרותי בריאות כללית מרכז רפואי סורוקה</option>
-            <option>מ.א.ר באר שבע</option>
-            <option>מ.א.ר קרית גת</option>
-            <option>בית חולים אגוסטה ויקטוריה</option>
-            <option>Aleena Nuclear Imaging</option>
-            <option>בית החולים המשפחה הקדושה</option>
-            <option>מרכז רפואי בני ציון</option>
-            <option>Istishari Cancer Center</option>
-            <option>AL-Ahli Hospital</option>
-        </select>
+    <div class="container">
+        <div class="logo-banner">
+            <div class="logo-main">ISORAD</div>
+            <div class="logo-sub">Radiopharmacy</div>
+        </div>
+        <div class="header">
+            <h1>מערכת הזמנת מנות - בית מרקחת גרעיני</h1>
+            <div class="header-left">
+                📞 <a href="tel:089434424">08-9434424</a><br>
+                ✉️ <a href="mailto:radiopharmacy@isorad.co.il">radiopharmacy@isorad.co.il</a>
+            </div>
+        </div>
+        <div class="dashboard">
+            <div class="form-section">
+                <div class="section-title">פרטי הזמנה</div>
+                <div class="form-row">
+                    <label>שם המוסד:</label>
+                    <select id="institution">
+                        <option value="">-- בחר מוסד --</option>
+                        <option value="מרכז רפואי הדסה עין-כרם">מרכז רפואי הדסה עין-כרם</option>
+                        <option value="מ.א.ר ירושלים">מ.א.ר ירושלים</option>
+                        <option value="מרכז רפואי שערי צדק">מרכז רפואי שערי צדק</option>
+                        <option value="מרכז רפואי אסף הרופא">מרכז רפואי אסף הרופא</option>
+                        <option value="המרכז רפואי שיבא">המרכז רפואי שיבא</option>
+                        <option value="מרכז רפואי וולפסון">מרכז רפואי וולפסון</option>
+                        <option value="מרכז שניידר לרפואת ילדים">מרכז שניידר לרפואת ילדים</option>
+                        <option value="בי״ח בילינסון">בי״ח בילינסון</option>
+                        <option value="מרכז רפואי איכילוב">מרכז רפואי איכילוב</option>
+                        <option value="אסותא ראשל״צ">אסותא ראשל״צ</option>
+                        <option value="אסותא רמת החייל">אסותא רמת החייל</option>
+                        <option value="אסותא אשדוד">אסותא אשדוד</option>
+                        <option value="אסותא חיפה">אסותא חיפה</option>
+                        <option value="אסותא באר שבע">אסותא באר שבע</option>
+                        <option value="מרכז רפואי רמב״ם">מרכז רפואי רמב״ם</option>
+                        <option value="המרכז הרפואי זיו">המרכז הרפואי זיו</option>
+                        <option value="המרכז הרפואי הלל יפה">המרכז הרפואי הלל יפה</option>
+                        <option value="בית חולים נהריה">בית חולים נהריה</option>
+                        <option value="מרכז רפואי כרמל">מרכז רפואי כרמל</option>
+                        <option value="מרכז רפואי מאיר">מרכז רפואי מאיר</option>
+                        <option value="מרכז רפואי העמק">מרכז רפואי העמק</option>
+                        <option value="בית חולים ברזילי">בית חולים ברזילי</option>
+                        <option value="מרכז רפואי קפלן">מרכז רפואי קפלן</option>
+                        <option value="מרכז רפואי סורוקה">מרכז רפואי סורוקה</option>
+                        <option value="מ.א.ר באר שבע">מ.א.ר באר שבע</option>
+                        <option value="מ.א.ר נצרת">מ.א.ר נצרת</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>תאריך הזמנה:</label>
+                    <input type="date" id="orderDate">
+                </div>
+                <div class="form-row">
+                    <label>שם מבצע ההזמנה:</label>
+                    <input type="text" id="ordererName" placeholder="הזן שם" style="width: 250px;">
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="section-title">פרטי תכשיר</div>
+                <div class="form-row">
+                    <label>בחר תכשיר:</label>
+                    <select id="product">
+                        <option value="">-- בחר תכשיר --</option>
+                        <option value="MDP">MDP</option>
+                        <option value="DMSA">DMSA</option>
+                        <option value="S.C">S.C</option>
+                        <option value="Sestamibi Stress">Sestamibi Stress</option>
+                        <option value="Sestamibi Rest">Sestamibi Rest</option>
+                        <option value="Sestamibi Parathyroid">Sestamibi Parathyroid</option>
+                        <option value="Ga-67">Ga-67</option>
+                        <option value="Tl-201">Tl-201</option>
+                        <option value="MAG-3">MAG-3</option>
+                        <option value="DTPA">DTPA</option>
+                        <option value="Filter S.C">Filter S.C</option>
+                        <option value="MAA">MAA</option>
+                        <option value="FDG">FDG</option>
+                        <option value="Ga-68 Dota Tate">Ga-68 Dota Tate</option>
+                        <option value="Ga-68 PSMA">Ga-68 PSMA</option>
+                        <option value="FPSMA">FPSMA</option>
+                        <option value="Tc-99 במזרק">Tc-99 במזרק</option>
+                        <option value="Tc-99 בבקבוקון">Tc-99 בבקבוקון</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>שעת כיול המנה הראשונה:</label>
+                    <input type="time" id="startTime" value="08:00">
+                </div>
+                <div class="form-row">
+                    <label>מספר מנות:</label>
+                    <input type="number" id="numDoses" min="1" max="50" value="5">
+                </div>
+                <div class="form-row">
+                    <label>אקטיביות (mCi):</label>
+                    <input type="number" id="activity" min="0.1" max="100" step="0.1" value="25">
+                </div>
+                <div class="form-row">
+                    <label>מרווח זמן (דקות):</label>
+                    <input type="number" id="interval" min="5" max="120" value="30">
+                </div>
+                <div class="form-row">
+                    <label>הערה:</label>
+                    <textarea id="notes" placeholder="הערה למנות אלו (אופציונלי)"></textarea>
+                </div>
+            </div>
+            <div class="buttons">
+                <button type="button" class="btn-add" id="btnAdd">➕ הוסף להזמנה</button>
+                <button type="button" class="btn-undo" id="btnUndo">↩️ צעד אחורה</button>
+                <button type="button" class="btn-clear" id="btnClear">🗑️ נקה הזמנה</button>
+                <button type="button" class="btn-print" id="btnPrint">🖨️ הדפס</button>
+                <button type="button" class="btn-export" id="btnExport">📊 ייצא ל-Excel</button>
+                <button type="button" class="btn-email" id="btnEmail">📧 שלח במייל</button>
+            </div>
+        </div>
+        <div id="orderContainer">
+            <div class="order-logo-banner">
+                <div class="order-logo-main">ISORAD</div>
+                <div class="order-logo-sub">Radiopharmacy</div>
+            </div>
+            <div class="order-header">
+                <h2>טופס הזמנה - בית מרקחת גרעיני</h2>
+                <div class="order-header-left">📞 08-9434424 | ✉️ radiopharmacy@isorad.co.il</div>
+            </div>
+            <div class="order-info">
+                <span>מוסד: <span id="displayInstitution">---</span></span>
+                <span>תאריך: <span id="displayDate">---</span></span>
+                <span>מזמין: <span id="displayOrderer">---</span></span>
+                <span>שעת הפקה: <span id="displayTimestamp">---</span></span>
+            </div>
+            <div id="orderContent">
+                <div class="empty-message">לא נוספו תכשירים להזמנה</div>
+            </div>
+        </div>
     </div>
-    
-    <div class="field">
-        <label>תאריך הזמנה:</label>
-        <input type="date" id="inp_date">
+    <div class="modal-overlay" id="emailModal">
+        <div class="modal-content">
+            <div class="modal-title">בחר אפליקציית מייל</div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn btn-gmail" id="btnGmail">📧 Gmail</button>
+                <button type="button" class="modal-btn btn-outlook" id="btnOutlook">📧 Outlook</button>
+                <button type="button" class="modal-btn btn-cancel" id="btnCancel">ביטול</button>
+            </div>
+        </div>
     </div>
-    
-    <div class="field">
-        <label>שם מבצע ההזמנה:</label>
-        <input type="text" id="inp_name" placeholder="הזן שם">
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-title">פרטי תכשיר</div>
-    
-    <div class="field">
-        <label>בחר תכשיר:</label>
-        <select id="sel_prod">
-            <option value="">-- בחר תכשיר --</option>
-            <option>MDP</option>
-            <option>DMSA</option>
-            <option>S.C</option>
-            <option>Sestamibi Stress</option>
-            <option>Sestamibi Rest</option>
-            <option>Sestamibi Parathyroid</option>
-            <option>Ga-67</option>
-            <option>Tl-201</option>
-            <option>MAG-3</option>
-            <option>DTPA</option>
-            <option>Filter S.C</option>
-            <option>MAA</option>
-            <option>FDG</option>
-            <option>Ga-68 Dota Tate</option>
-            <option>Ga-68 PSMA</option>
-            <option>FPSMA</option>
-        </select>
-    </div>
-    
-    <div class="field">
-        <label>שעת כיול המנה הראשונה:</label>
-        <input type="time" id="inp_time" value="08:00">
-    </div>
-    
-    <div class="field">
-        <label>מספר מנות:</label>
-        <input type="number" id="inp_num" value="5" min="1" max="50">
-    </div>
-    
-    <div class="field">
-        <label>אקטיביות (mCi):</label>
-        <input type="number" id="inp_act" value="25" min="0.1" max="100" step="0.1">
-    </div>
-    
-    <div class="field">
-        <label>מרווח זמן (דקות):</label>
-        <input type="number" id="inp_int" value="30" min="5" max="120">
-    </div>
-    
-    <div class="field">
-        <label>הערה:</label>
-        <textarea id="inp_note" placeholder="הערה למנות אלו (אופציונלי)"></textarea>
-    </div>
-    
-    <div class="btn-row">
-        <button type="button" class="btn btn-green" onclick="doAdd()">➕ הוסף להזמנה</button>
-    </div>
-    <div class="btn-row">
-        <button type="button" class="btn btn-red" onclick="doClear()">🗑️ נקה</button>
-        <button type="button" class="btn btn-blue" onclick="doPrint()">🖨️ הדפס</button>
-    </div>
-    <div class="btn-row">
-        <button type="button" class="btn btn-dark-green" onclick="doExport()">📊 ייצא ל-Excel</button>
-    </div>
-</div>
-
-<div class="order-box">
-    <div class="order-header">
-        <div class="order-header-title">ISORAD</div>
-        <div class="order-header-sub">Radiopharmacy</div>
-    </div>
-    
-    <div class="order-info">
-        <div><strong>מוסד:</strong> <span id="out_inst">---</span></div>
-        <div><strong>תאריך:</strong> <span id="out_date">---</span> | <strong>מזמין:</strong> <span id="out_name">---</span> | <strong>שעת הפקה:</strong> <span id="out_time">---</span></div>
-    </div>
-    
-    <div id="out_tables">
-        <div class="empty-msg">לא נוספו תכשירים להזמנה</div>
-    </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-
-<script>
-var DATA = {};
-
-window.onload = function() {
-    var d = new Date();
-    d.setDate(d.getDate() + 1);
-    var y = d.getFullYear();
-    var m = d.getMonth() + 1;
-    var day = d.getDate();
-    if (m < 10) m = '0' + m;
-    if (day < 10) day = '0' + day;
-    document.getElementById('inp_date').value = y + '-' + m + '-' + day;
-};
-
-function getTime() {
-    var d = new Date();
-    var h = d.getHours();
-    var m = d.getMinutes();
-    if (h < 10) h = '0' + h;
-    if (m < 10) m = '0' + m;
-    return h + ':' + m;
-}
-
-function pad(n) {
-    return n < 10 ? '0' + n : '' + n;
-}
-
-function fmtDate(s) {
-    if (!s) return '---';
-    var p = s.split('-');
-    return p[2] + '/' + p[1] + '/' + p[0];
-}
-
-function doAdd() {
-    var inst = document.getElementById('sel_inst').value;
-    var dt = document.getElementById('inp_date').value;
-    var nm = document.getElementById('inp_name').value;
-    var prod = document.getElementById('sel_prod').value;
-    var tm = document.getElementById('inp_time').value;
-    var num = parseInt(document.getElementById('inp_num').value) || 5;
-    var act = parseFloat(document.getElementById('inp_act').value) || 25;
-    var intv = parseInt(document.getElementById('inp_int').value) || 30;
-    var note = document.getElementById('inp_note').value;
-    
-    if (!prod) {
-        alert('נא לבחור תכשיר');
-        return;
-    }
-    if (!inst) {
-        alert('נא לבחור מוסד');
-        return;
-    }
-    
-    document.getElementById('out_inst').innerText = inst;
-    document.getElementById('out_date').innerText = fmtDate(dt);
-    document.getElementById('out_name').innerText = nm || '---';
-    
-    var tp = tm.split(':');
-    var hrs = parseInt(tp[0]) || 8;
-    var mins = parseInt(tp[1]) || 0;
-    var total = hrs * 60 + mins;
-    
-    if (!DATA[prod]) {
-        DATA[prod] = [];
-    }
-    
-    for (var i = 0; i < num; i++) {
-        var h = Math.floor(total / 60);
-        var m = total % 60;
-        DATA[prod].push({
-            t: pad(h) + ':' + pad(m),
-            a: act,
-            n: note
-        });
-        total = total + intv;
-    }
-    
-    render();
-    document.getElementById('sel_prod').value = '';
-    document.getElementById('inp_note').value = '';
-}
-
-function render() {
-    var box = document.getElementById('out_tables');
-    var keys = [];
-    for (var k in DATA) {
-        keys.push(k);
-    }
-    
-    if (keys.length === 0) {
-        box.innerHTML = '<div class="empty-msg">לא נוספו תכשירים להזמנה</div>';
-        return;
-    }
-    
-    var html = '';
-    for (var i = 0; i < keys.length; i++) {
-        var prod = keys[i];
-        var arr = DATA[prod];
-        var cnt = arr.length;
+    <script>
+    (function() {
+        var orderData = {};
+        var orderHistory = [];
         
-        html += '<div class="product-box">';
-        html += '<div class="product-title">' + prod + '</div>';
-        html += '<table>';
-        html += '<tr><th>שעה</th><th>mCi</th><th>כמות</th><th>הערות</th></tr>';
-        
-        for (var j = 0; j < arr.length; j++) {
-            var row = arr[j];
-            html += '<tr>';
-            html += '<td>' + row.t + '</td>';
-            html += '<td>' + row.a + '</td>';
-            html += '<td>1</td>';
-            html += '<td style="text-align:right;font-size:11px;">' + (row.n || '') + '</td>';
-            html += '</tr>';
-        }
-        
-        html += '<tr class="total-row">';
-        html += '<td colspan="2" style="text-align:right;">סה״כ:</td>';
-        html += '<td>' + cnt + '</td>';
-        html += '<td></td>';
-        html += '</tr>';
-        
-        html += '</table></div>';
-    }
-    
-    box.innerHTML = html;
-}
-
-function doClear() {
-    if (confirm('לנקות את ההזמנה?')) {
-        DATA = {};
-        document.getElementById('out_inst').innerText = '---';
-        document.getElementById('out_date').innerText = '---';
-        document.getElementById('out_name').innerText = '---';
-        document.getElementById('out_time').innerText = '---';
-        render();
-    }
-}
-
-function doPrint() {
-    var keys = [];
-    for (var k in DATA) keys.push(k);
-    if (keys.length === 0) {
-        alert('אין נתונים');
-        return;
-    }
-    document.getElementById('out_time').innerText = getTime();
-    window.print();
-}
-
-function doExport() {
-    var keys = [];
-    for (var k in DATA) keys.push(k);
-    if (keys.length === 0) {
-        alert('אין נתונים');
-        return;
-    }
-    
-    var inst = document.getElementById('out_inst').innerText;
-    var dt = document.getElementById('out_date').innerText;
-    var nm = document.getElementById('out_name').innerText;
-    var tm = getTime();
-    document.getElementById('out_time').innerText = tm;
-    
-    var wb = new ExcelJS.Workbook();
-    var ws = wb.addWorksheet('הזמנה', {views: [{rightToLeft: true}]});
-    
-    ws.columns = [{width:18}, {width:20}, {width:12}, {width:50}];
-    
-    ws.mergeCells('A1:D1');
-    ws.getCell('A1').value = 'ISORAD - Radiopharmacy';
-    ws.getCell('A1').font = {bold:true, size:20, color:{argb:'FFFFFFFF'}};
-    ws.getCell('A1').fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF1F4E79'}};
-    ws.getCell('A1').alignment = {horizontal:'center'};
-    ws.getRow(1).height = 32;
-    
-    ws.mergeCells('A2:D2');
-    ws.getCell('A2').value = 'מוסד: ' + inst + ' | תאריך: ' + dt + ' | מזמין: ' + nm + ' | שעה: ' + tm;
-    ws.getCell('A2').fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFD9E2F3'}};
-    ws.getCell('A2').alignment = {horizontal:'center'};
-    
-    var row = 4;
-    for (var i = 0; i < keys.length; i++) {
-        var prod = keys[i];
-        var arr = DATA[prod];
-        
-        ws.mergeCells('A'+row+':D'+row);
-        ws.getCell('A'+row).value = prod;
-        ws.getCell('A'+row).font = {bold:true, size:14, color:{argb:'FFFFFFFF'}};
-        ws.getCell('A'+row).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF1F4E79'}};
-        ws.getCell('A'+row).alignment = {horizontal:'center'};
-        row++;
-        
-        var hdr = ['שעת כיול', 'אקטיביות', 'כמות', 'הערות'];
-        for (var h = 0; h < 4; h++) {
-            ws.getCell(row, h+1).value = hdr[h];
-            ws.getCell(row, h+1).font = {bold:true};
-            ws.getCell(row, h+1).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFD9E2F3'}};
-            ws.getCell(row, h+1).border = {top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'}};
-        }
-        row++;
-        
-        for (var j = 0; j < arr.length; j++) {
-            ws.getCell(row, 1).value = arr[j].t;
-            ws.getCell(row, 2).value = arr[j].a;
-            ws.getCell(row, 3).value = 1;
-            ws.getCell(row, 4).value = arr[j].n || '';
-            for (var c = 1; c <= 4; c++) {
-                ws.getCell(row, c).border = {top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'}};
+        function saveHistory() {
+            var copy = {};
+            for (var k in orderData) {
+                if (orderData.hasOwnProperty(k)) {
+                    copy[k] = [];
+                    for (var i = 0; i < orderData[k].length; i++) {
+                        copy[k].push({ time: orderData[k][i].time, activity: orderData[k][i].activity, qty: orderData[k][i].qty, notes: orderData[k][i].notes });
+                    }
+                }
             }
-            row++;
+            orderHistory.push(copy);
+            if (orderHistory.length > 20) orderHistory.shift();
         }
         
-        ws.mergeCells('A'+row+':B'+row);
-        ws.getCell('A'+row).value = 'סה״כ:';
-        ws.getCell('A'+row).font = {bold:true};
-        ws.getCell('A'+row).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF3CD'}};
-        ws.getCell('A'+row).alignment = {horizontal:'right'};
-        ws.getCell(row, 3).value = arr.length;
-        ws.getCell(row, 3).font = {bold:true};
-        ws.getCell(row, 3).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF3CD'}};
-        row += 2;
-    }
-    
-    wb.xlsx.writeBuffer().then(function(buf) {
-        var blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'הזמנה.xlsx';
-        a.click();
-    });
-}
-</script>
-
+        function undo() {
+            if (orderHistory.length === 0) { alert('אין פעולות לביטול'); return; }
+            orderData = orderHistory.pop();
+            renderOrder();
+        }
+        
+        function pad2(n) { n = parseInt(n, 10); return (n < 10 ? '0' : '') + n; }
+        function setTomorrowDate() {
+            var t = new Date(); t.setDate(t.getDate() + 1);
+            document.getElementById('orderDate').value = t.getFullYear() + '-' + pad2(t.getMonth() + 1) + '-' + pad2(t.getDate());
+        }
+        function getCurrentTime() { var n = new Date(); return pad2(n.getHours()) + ':' + pad2(n.getMinutes()); }
+        function formatDate(s) { if (!s) return '---'; var p = s.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+        function getKeys(o) { var k = []; for (var x in o) { if (o.hasOwnProperty(x)) k.push(x); } return k; }
+        
+        function addToOrder() {
+            var inst = document.getElementById('institution').value;
+            var prod = document.getElementById('product').value;
+            if (!prod) { alert('נא לבחור תכשיר'); return; }
+            if (!inst) { alert('נא לבחור מוסד'); return; }
+            var dt = document.getElementById('orderDate').value;
+            var nm = document.getElementById('ordererName').value;
+            var tm = document.getElementById('startTime').value || '08:00';
+            var num = parseInt(document.getElementById('numDoses').value, 10) || 5;
+            var act = parseFloat(document.getElementById('activity').value) || 25;
+            var intv = parseInt(document.getElementById('interval').value, 10) || 30;
+            var notes = document.getElementById('notes').value;
+            
+            // Check Sestamibi Stress/Rest balance
+            if (prod === 'Sestamibi Stress' || prod === 'Sestamibi Rest') {
+                var other = prod === 'Sestamibi Stress' ? 'Sestamibi Rest' : 'Sestamibi Stress';
+                var currentCount = orderData[prod] ? orderData[prod].length : 0;
+                var otherCount = orderData[other] ? orderData[other].length : 0;
+                var newTotal = currentCount + num;
+                if (otherCount > 0 && newTotal !== otherCount) {
+                    var msg = 'שגיאה: כמות ' + prod + ' (' + newTotal + ') לא תואמת לכמות ' + other + ' (' + otherCount + ').\n\n';
+                    msg += 'הכמויות חייבות להיות שוות.\n';
+                    msg += 'אם הכמויות לא שוות, יש להשתמש ב-Sestamibi Parathyroid.';
+                    alert(msg);
+                    return;
+                }
+            }
+            
+            saveHistory();
+            document.getElementById('displayInstitution').innerHTML = inst;
+            document.getElementById('displayDate').innerHTML = formatDate(dt);
+            document.getElementById('displayOrderer').innerHTML = nm || '---';
+            var parts = tm.split(':');
+            var mins = (parseInt(parts[0],10)||8)*60 + (parseInt(parts[1],10)||0);
+            if (!orderData[prod]) orderData[prod] = [];
+            for (var i = 0; i < num; i++) {
+                var h = Math.floor(mins/60)%24, m = mins%60;
+                orderData[prod].push({ time: pad2(h)+':'+pad2(m), activity: act, qty: 1, notes: notes||'' });
+                mins += intv;
+            }
+            renderOrder();
+            document.getElementById('product').value = '';
+            document.getElementById('notes').value = '';
+        }
+        
+        function renderOrder() {
+            var c = document.getElementById('orderContent');
+            var prods = getKeys(orderData);
+            if (prods.length === 0) { c.innerHTML = '<div class="empty-message">לא נוספו תכשירים להזמנה</div>'; return; }
+            var html = '';
+            for (var p = 0; p < prods.length; p++) {
+                var prod = prods[p], doses = orderData[prod], total = doses.length;
+                html += '<div class="product-section"><div class="product-header">' + prod + '</div>';
+                html += '<table><thead><tr><th style="width:15%">שעת כיול</th><th style="width:15%">אקטיביות (mCi)</th><th style="width:10%">כמות</th><th style="width:60%">הערות</th></tr></thead><tbody>';
+                for (var d = 0; d < doses.length; d++) {
+                    var dose = doses[d];
+                    html += '<tr><td>' + dose.time + '</td><td>' + dose.activity + '</td><td>' + dose.qty + '</td><td class="notes-cell">' + dose.notes + '</td></tr>';
+                }
+                html += '<tr class="total-row"><td colspan="2" style="text-align:right;font-weight:bold;">סה״כ מנות:</td><td style="font-weight:bold;">' + total + '</td><td></td></tr>';
+                html += '</tbody></table></div>';
+            }
+            c.innerHTML = html;
+        }
+        
+        function clearOrder() {
+            if (confirm('האם אתה בטוח?')) {
+                orderData = {};
+                document.getElementById('displayInstitution').innerHTML = '---';
+                document.getElementById('displayDate').innerHTML = '---';
+                document.getElementById('displayOrderer').innerHTML = '---';
+                document.getElementById('displayTimestamp').innerHTML = '---';
+                renderOrder();
+            }
+        }
+        
+        function printOrder() {
+            if (getKeys(orderData).length === 0) { alert('אין נתונים להדפסה'); return; }
+            document.getElementById('displayTimestamp').innerHTML = getCurrentTime();
+            setTimeout(function() { window.print(); }, 100);
+        }
+        
+        function getEmailData() {
+            var inst = document.getElementById('displayInstitution').innerHTML;
+            var dt = document.getElementById('displayDate').innerHTML;
+            var ord = document.getElementById('displayOrderer').innerHTML;
+            var subj = 'הזמנת מנות - ' + inst + ' - ' + dt;
+            var body = 'שלום רב,\n\nמצורף קובץ הזמנת מנות.\n\n* נא לצרף את קובץ האקסל *\n\nבברכה,\n' + ord;
+            return { subject: subj, body: body };
+        }
+        
+        function showEmailModal() {
+            if (getKeys(orderData).length === 0) { alert('אין נתונים לשליחה'); return; }
+            document.getElementById('emailModal').classList.add('show');
+        }
+        function hideEmailModal() { document.getElementById('emailModal').classList.remove('show'); }
+        
+        function sendViaGmail() {
+            var d = getEmailData();
+            window.open('https://mail.google.com/mail/?view=cm&fs=1&to=radiopharmacy@isorad.co.il&su=' + encodeURIComponent(d.subject) + '&body=' + encodeURIComponent(d.body), '_blank');
+            hideEmailModal();
+        }
+        function sendViaOutlook() {
+            var d = getEmailData();
+            window.open('https://outlook.live.com/mail/0/deeplink/compose?to=radiopharmacy@isorad.co.il&subject=' + encodeURIComponent(d.subject) + '&body=' + encodeURIComponent(d.body), '_blank');
+            hideEmailModal();
+        }
+        
+        function exportToExcel() {
+            var prods = getKeys(orderData);
+            if (prods.length === 0) { alert('אין נתונים לייצוא'); return; }
+            var inst = document.getElementById('displayInstitution').innerHTML;
+            var dt = document.getElementById('displayDate').innerHTML;
+            var ord = document.getElementById('displayOrderer').innerHTML;
+            var ts = getCurrentTime();
+            document.getElementById('displayTimestamp').innerHTML = ts;
+            var wb = new ExcelJS.Workbook();
+            var ws = wb.addWorksheet('הזמנה', { views: [{ rightToLeft: true }] });
+            ws.columns = [{ width: 18 }, { width: 20 }, { width: 12 }, { width: 50 }];
+            ws.mergeCells('A1:D1');
+            var t = ws.getCell('A1'); t.value = 'ISORAD - Radiopharmacy';
+            t.font = { bold: true, size: 20, color: { argb: 'FFFFFFFF' } };
+            t.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E79' } };
+            t.alignment = { horizontal: 'center', vertical: 'middle' };
+            ws.getRow(1).height = 32;
+            ws.mergeCells('A2:D2');
+            var s = ws.getCell('A2'); s.value = 'טופס הזמנה - בית מרקחת גרעיני';
+            s.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+            s.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E75B6' } };
+            s.alignment = { horizontal: 'center', vertical: 'middle' };
+            ws.getRow(2).height = 24;
+            ws.mergeCells('A3:D3');
+            var i3 = ws.getCell('A3'); i3.value = 'מוסד: ' + inst;
+            i3.font = { bold: true, size: 11 }; i3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E2F3' } };
+            i3.alignment = { horizontal: 'center', vertical: 'middle' }; ws.getRow(3).height = 22;
+            ws.mergeCells('A4:D4');
+            var i4 = ws.getCell('A4'); i4.value = 'תאריך: ' + dt + '  |  מזמין: ' + ord + '  |  שעת הפקה: ' + ts;
+            i4.font = { bold: true, size: 11 }; i4.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E2F3' } };
+            i4.alignment = { horizontal: 'center', vertical: 'middle' }; ws.getRow(4).height = 22;
+            ws.mergeCells('A5:D5');
+            var c5 = ws.getCell('A5'); c5.value = 'טלפון: 08-9434424  |  מייל: radiopharmacy@isorad.co.il';
+            c5.font = { size: 10 }; c5.alignment = { horizontal: 'center' };
+            var row = 7;
+            for (var p = 0; p < prods.length; p++) {
+                var prod = prods[p], doses = orderData[prod], totalQty = doses.length;
+                ws.mergeCells('A' + row + ':D' + row);
+                var pc = ws.getCell('A' + row); pc.value = prod;
+                pc.font = { bold: true, size: 13, color: { argb: 'FFFFFFFF' } };
+                pc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E79' } };
+                pc.alignment = { horizontal: 'center', vertical: 'middle' };
+                ws.getRow(row).height = 24; row++;
+                var hdrs = ['שעת כיול', 'אקטיביות (mCi)', 'כמות', 'הערות'];
+                for (var h = 0; h < hdrs.length; h++) {
+                    var hc = ws.getCell(row, h + 1); hc.value = hdrs[h]; hc.font = { bold: true };
+                    hc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E2F3' } };
+                    hc.alignment = { horizontal: 'center' };
+                    hc.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                }
+                row++;
+                for (var d = 0; d < doses.length; d++) {
+                    var dose = doses[d];
+                    ws.getCell(row, 1).value = dose.time;
+                    ws.getCell(row, 2).value = dose.activity;
+                    ws.getCell(row, 3).value = dose.qty;
+                    ws.getCell(row, 4).value = dose.notes || '';
+                    for (var x = 1; x <= 4; x++) {
+                        var dc = ws.getCell(row, x);
+                        dc.alignment = { horizontal: x === 4 ? 'right' : 'center', wrapText: true };
+                        dc.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                        if (d % 2 === 1) dc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } };
+                    }
+                    row++;
+                }
+                ws.mergeCells('A' + row + ':B' + row);
+                var tlc = ws.getCell('A' + row); tlc.value = 'סה״כ מנות:'; tlc.font = { bold: true };
+                tlc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } };
+                tlc.alignment = { horizontal: 'right' };
+                tlc.border = { top: { style: 'medium' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                var tqc = ws.getCell(row, 3); tqc.value = totalQty; tqc.font = { bold: true };
+                tqc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } };
+                tqc.alignment = { horizontal: 'center' };
+                tqc.border = { top: { style: 'medium' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                var ec = ws.getCell(row, 4);
+                ec.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } };
+                ec.border = { top: { style: 'medium' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                row += 2;
+            }
+            wb.xlsx.writeBuffer().then(function(buf) {
+                var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                var lnk = document.createElement('a');
+                lnk.href = URL.createObjectURL(blob);
+                lnk.download = 'הזמנה_' + (inst || 'order').substring(0, 30) + '_' + (dt || '').replace(/\//g, '-') + '.xlsx';
+                document.body.appendChild(lnk); lnk.click(); document.body.removeChild(lnk);
+            });
+        }
+        
+        setTomorrowDate();
+        document.getElementById('btnAdd').onclick = addToOrder;
+        document.getElementById('btnUndo').onclick = undo;
+        document.getElementById('btnClear').onclick = clearOrder;
+        document.getElementById('btnPrint').onclick = printOrder;
+        document.getElementById('btnExport').onclick = exportToExcel;
+        document.getElementById('btnEmail').onclick = showEmailModal;
+        document.getElementById('btnGmail').onclick = sendViaGmail;
+        document.getElementById('btnOutlook').onclick = sendViaOutlook;
+        document.getElementById('btnCancel').onclick = hideEmailModal;
+        document.getElementById('emailModal').onclick = function(e) { if (e.target.id === 'emailModal') hideEmailModal(); };
+    })();
+    </script>
 </body>
 </html>
