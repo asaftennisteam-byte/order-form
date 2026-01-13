@@ -110,25 +110,25 @@
                     <label>בחר תכשיר:</label>
                     <select id="product" style="-webkit-appearance: none; appearance: none;">
                         <option value="">-- בחר תכשיר --</option>
-                        <option value="MDP">MDP</option>
                         <option value="DMSA">DMSA</option>
-                        <option value="S.C">S.C</option>
-                        <option value="Sestamibi Stress">Sestamibi Stress</option>
-                        <option value="Sestamibi Rest">Sestamibi Rest</option>
-                        <option value="Sestamibi Parathyroid">Sestamibi Parathyroid</option>
-                        <option value="Ga-67">Ga-67</option>
-                        <option value="Tl-201">Tl-201</option>
-                        <option value="MAG-3">MAG-3</option>
                         <option value="DTPA">DTPA</option>
-                        <option value="Filtered S.C">Filtered S.C</option>
-                        <option value="MAA">MAA</option>
                         <option value="FDG">FDG</option>
                         <option value="FDOPA">FDOPA</option>
+                        <option value="Filtered S.C">Filtered S.C</option>
+                        <option value="FPSMA">FPSMA</option>
+                        <option value="Ga-67">Ga-67</option>
                         <option value="Ga-68 Dota Tate">Ga-68 Dota Tate</option>
                         <option value="Ga-68 PSMA">Ga-68 PSMA</option>
-                        <option value="FPSMA">FPSMA</option>
-                        <option value="Tc-99m במזרק">Tc-99m במזרק</option>
+                        <option value="MAA">MAA</option>
+                        <option value="MAG-3">MAG-3</option>
+                        <option value="MDP">MDP</option>
+                        <option value="S.C">S.C</option>
+                        <option value="Sestamibi Parathyroid">Sestamibi Parathyroid</option>
+                        <option value="Sestamibi Rest">Sestamibi Rest</option>
+                        <option value="Sestamibi Stress">Sestamibi Stress</option>
                         <option value="Tc-99m בבקבוקון">Tc-99m בבקבוקון</option>
+                        <option value="Tc-99m במזרק">Tc-99m במזרק</option>
+                        <option value="Tl-201">Tl-201</option>
                     </select>
                 </div>
                 <div class="form-row">
@@ -141,7 +141,7 @@
                 </div>
                 <div class="form-row">
                     <label>אקטיביות (mCi):</label>
-                    <input type="number" id="activity" min="0.1" max="100" step="0.1" placeholder="">
+                    <input type="number" id="activity" min="0.1" max="100" step="1" placeholder="">
                 </div>
                 <div class="form-row">
                     <label>מרווח זמן (דקות):</label>
@@ -290,8 +290,8 @@
                 alert('נא להזין אקטיביות');
                 return;
             }
-            if (numDoses >= 2 && (!interval || interval < 1)) {
-                alert('נא להזין מרווח זמן');
+            if (numDoses >= 2 && (interval === '' || interval === null || interval === undefined)) {
+                alert('נא להזין מרווח זמן (0 אם כל המנות באותה שעה)');
                 return;
             }
             
@@ -334,7 +334,8 @@
                 orderData[prod] = [];
             }
             
-            for (var i = 0; i < num; i++) {
+            // If interval is 0, add all doses as one entry with qty = num
+            if (intv === 0 || isNaN(intv)) {
                 var h = Math.floor(currentMinutes / 60) % 24;
                 var m = currentMinutes % 60;
                 var timeStr = pad2(h) + ':' + pad2(m);
@@ -342,10 +343,24 @@
                 orderData[prod].push({
                     time: timeStr,
                     activity: act,
-                    qty: 1,
+                    qty: num,
                     notes: notes || ''
                 });
-                currentMinutes = currentMinutes + intv;
+            } else {
+                // Normal case: add each dose separately
+                for (var i = 0; i < num; i++) {
+                    var h = Math.floor(currentMinutes / 60) % 24;
+                    var m = currentMinutes % 60;
+                    var timeStr = pad2(h) + ':' + pad2(m);
+                    
+                    orderData[prod].push({
+                        time: timeStr,
+                        activity: act,
+                        qty: 1,
+                        notes: notes || ''
+                    });
+                    currentMinutes = currentMinutes + intv;
+                }
             }
             
             renderOrder();
@@ -366,7 +381,10 @@
             for (var p = 0; p < products.length; p++) {
                 var product = products[p];
                 var doses = orderData[product];
-                var totalQty = doses.length;
+                var totalQty = 0;
+                for (var t = 0; t < doses.length; t++) {
+                    totalQty += doses[t].qty;
+                }
                 
                 html += '<div class="product-section">';
                 html += '<div class="product-header">' + product + '</div>';
@@ -497,7 +515,10 @@
             for (var p = 0; p < prods.length; p++) {
                 var product = prods[p];
                 var doses = orderData[product];
-                var totalQty = doses.length;
+                var totalQty = 0;
+                for (var t = 0; t < doses.length; t++) {
+                    totalQty += doses[t].qty;
+                }
                 
                 ws.mergeCells('A' + row + ':D' + row);
                 var prodCell = ws.getCell('A' + row);
@@ -559,6 +580,26 @@
                 row += 2;
             }
             
+            // Print settings - fit to one page width, repeat header rows
+            ws.pageSetup = {
+                fitToPage: true,
+                fitToWidth: 1,
+                fitToHeight: 0,
+                orientation: 'portrait',
+                printArea: 'A1:D' + (row - 1),
+                margins: {
+                    left: 0.25,
+                    right: 0.25,
+                    top: 0.75,
+                    bottom: 0.75,
+                    header: 0.3,
+                    footer: 0.3
+                }
+            };
+            
+            // Repeat rows 1-6 on each printed page
+            ws.pageSetup.printTitlesRow = '1:6';
+            
             wb.xlsx.writeBuffer().then(function(buffer) {
                 var blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 var link = document.createElement('a');
@@ -574,6 +615,17 @@
         
         // Initialize
         setTomorrowDate();
+        
+        // Change activity step based on product selection
+        document.getElementById('product').onchange = function() {
+            var prod = this.value;
+            var activityInput = document.getElementById('activity');
+            if (prod === 'Filtered S.C') {
+                activityInput.step = '0.1';
+            } else {
+                activityInput.step = '1';
+            }
+        };
         
         // Event handlers
         document.getElementById('btnAdd').onclick = addToOrder;
