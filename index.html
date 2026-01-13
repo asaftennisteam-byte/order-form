@@ -290,7 +290,7 @@
                 alert('נא להזין אקטיביות');
                 return;
             }
-            if (!interval || interval < 1) {
+            if (numDoses >= 2 && (!interval || interval < 1)) {
                 alert('נא להזין מרווח זמן');
                 return;
             }
